@@ -74,3 +74,48 @@ a's and b's. That's determined by your processor speed and how your
 process get scheduled. You should see all of this on the screen
 though. If you think about it, you've had an operating system
 simultaneously running 4 processes! That's pretty cool!
+
+### Hints / How to Succeed
+
+This assignment is arguably your most significant "rite of passage" as a systems
+programmer. You are moving from managing static hardware to managing the "life"
+of a program. Here is how to navigate the transition from the monolithic world
+of xv6 to our intrepid little HAWX microkernel:
+
+* **The "BLOB" mercy:** In xv6, `exec` has to navigate the complexities of the
+   file system and `readi` calls. In HAWX, we don’t have a file system yet, so we
+   are loading from a **binary string (BLOB)** embedded directly in the kernel
+   image. When you implement `proc_loadseg`, your "disk" is just an array of
+   bytes in memory. Your secret weapon here is `memmove` using the expression
+   `bin + offset + i`.
+* **Study the Analogs:** I have pointed you toward `kernel/proc.c`,
+   `kernel/exec.c`, and `kernel/vm.c` in the xv6 source. Use them as a
+   reference, but **do not copy-paste**. HAWX adheres strictly to the C calling
+   convention, which simplifies things, but you must manually wire the
+   HAWX-specific memory functions you wrote in previous labs, like
+   `vm_page_alloc` and `vm_page_insert`.
+   **Baby-proof the Kernel:** ELF loading is inherently risky because the header
+   contains addresses provided by the user. To succeed, you must think like a
+   paranoid resource manager. Check if `ph.vaddr + ph.memsz` overflows. If a
+   user tries to trick the kernel into overwriting itself, you must catch it
+   and "kill the offending process" with extreme prejudice.
+* **Mind the Permissions:** Remember the "hexadecimal incantations" from the
+    Virtual Memory lab. When setting up the page table, ensure program text is
+    readable and executable (`PTE_R | PTE_X`), but **not writable**. Use
+    `proc_guard` to mark the stack guard page invalid (`~PTE_U`) so that a stack
+    overflow results in a clean page fault rather than a silent kernel
+    corruption.
+* **The Simplified Stack:** We are not putting program arguments
+    (`argc`/`argv`) on the stack for this lab. This is a mercy! It allows you to
+    focus entirely on the ELF parsing and the **trapframe** setup. Just make
+    sure the stack pointer (`sp`) is correctly aligned and that the `epc` is set
+    to the entry point defined in the ELF header.
+* **Lauer’s Law:** As you work through `proc.c`, remember that **less code is
+    better code**. If your implementation of `proc_load_elf` starts looking like
+    a "dim shadow of UNIX" with hundreds of lines of boilerplate, step back and
+    see if you can use the helper functions more effectively.
+
+Once you get that first user process to cycle through its states and output its
+diagnostic "amoks," take a moment to celebrate. You have stitched the segments
+together and delivered the spark. It is alive—now try to keep your creation from
+rampaging through the kernel.
