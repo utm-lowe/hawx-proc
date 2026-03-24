@@ -51,13 +51,6 @@ have completed a major right of passage as a programmer! You'll also
 have demonstrated that you understand the difference between our
 micro-kernel and MIT's monolithic kernel. 
 
-Now, before we can get anything to work, you need to implement the
-scheduler in `scheduler.c`. You can do this by directly adapting the
-xv6 scheduler, or you can get creative. The choice is yours! If you
-play with other scheduling algorithms, I will give you extra credit.
-Especially if you modify `init.c` in a way that demonstrates the
-effectiveness of your scheduler. 
-
 Once you get everything done, you should be able to run the system and
 see something like this:
 
